@@ -1,0 +1,48 @@
+# GRPH: A compile-time graphing library in SPWN.
+
+A compile-time graphing library in SPWN.  
+Currently only implements bar charts.
+
+## Installation
+
+1. Clone this repository or download the repository zip
+
+```sh
+git clone https://github.com/sertdfyguhi/GRPH.git
+```
+
+2. Move the `libraries` folder into your SPWN file directory
+
+## Example
+
+```ts
+import GRPH
+
+chart = @bar_chart::new(
+  {
+    "Stereo Madness": {
+      value: 1,
+      color: "#2451FF"
+    },
+    "Bloodlust": {
+      value: 8,
+      color: "#F0001F"
+    }
+  },
+  title="The Difficulty of\nDifferent Geometry Dash Levels",
+  y_axis_label="Difficulty"
+)
+chart.add("Back on Track", 2, color="#FF8329")
+chart.show(start_pos=[10, 1])
+```
+
+### Resulting Bar Chart:
+
+![The resulting graph in GD](https://github.com/sertdfyguhi/GRPH/example.png)
+
+## Todo
+
+- [ ] Add documentation
+- [ ] Add line graph
+- [ ] Fix bug where block is out of graph when value is lower than 1
+- [ ] Add functionality to have the value shown on bar chart

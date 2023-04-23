@@ -1,0 +1,17 @@
+grid = (n: @number) {
+  return 15 + (n - 1) * 30
+}
+
+ceil = (n: @number, round_to: @number = 1) {
+  return $.ceil(n / round_to) * round_to
+}
+
+floor = (n: @number, round_to: @number = 1) {
+  return $.floor(n / round_to) * round_to
+}
+
+return {
+  grid,
+  floor,
+  ceil
+}

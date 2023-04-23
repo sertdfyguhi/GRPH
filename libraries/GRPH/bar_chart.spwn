@@ -1,0 +1,202 @@
+utils = import "utils.spwn"
+extract obj_props
+
+type @bar_chart
+impl @bar_chart {
+  new: (
+    values: @dictionary = {},
+    title: @string = "",
+    y_axis_label: @string = "",
+    line_color_channel: @color = 500c,
+    text_color_channel: @color = 500c
+  ) {
+    let temp = @bar_chart::{
+      values: {},
+      title,
+      y_axis_label,
+      line_color_channel,
+      text_color_channel
+    }
+
+    // to be able to check for non number values
+    temp.add_dict(values)
+    return temp
+  },
+
+  add: (self, label: @string, value: @number, color: @string = '#ffffff') {
+    self.values.set(label, { value, color })
+  },
+
+  set_title: (self, label: @string) {
+    self.y_axis_label = label
+  },
+
+  set_y_axis_label: (self, label: @string) {
+    self.y_axis_label = label
+  },
+
+  add_dict: (self, values: @dictionary) {
+    for [label, value] in values {
+      match value {
+        @number: self.values.set(label, { value, color: '#ffffff' }),
+        @dictionary: () {
+          if !("value" in value) {
+            throw "Value of " + label + " not provided in dictionary."
+          }
+
+          let temp = value
+          if !("color" in value) {
+            temp.set("color", "#ffffff")
+          }
+
+          self.values.set(label, temp)
+        } (),
+        else: () { throw "Provided value for " + label + " not a dictionary or number." } ()
+      }
+    }
+  },
+
+  show: (self, start_pos: @array = [0, 0], y_step: @number = 1, between_y_step: @number = 1, groups: @array = []) {
+    // setup graph axis
+    labels = self.values.keys()
+    if labels.length == 0 { throw "Nothing has been added to the graph yet." }
+
+    val_dict = self.values.values()
+    values = val_dict.map(x => x.value if x is @dictionary else x)
+    start_x = utils.grid(start_pos[0]) + 15 + 30 if self.y_axis_label.length > 0 else 0
+    start_y = utils.grid(start_pos[1]) + 15
+    labels_length = labels.map(x => $.ceil(x.length * 0.6 + 1))
+    v_range_end = $.ceil(values.max() / y_step) + 1
+
+    // add title text
+    if self.title.length > 0 {
+      base_y = start_y + utils.grid(v_range_end + 2.5)
+      x = start_x + utils.grid(labels_length.sum() / 2 + 1)
+      texts = self.title.split('\n').reverse() // split returns them in reverse order
+
+      for i in 0..texts.length {
+        texts[i].to_obj().with(
+          X, x
+        ).with(
+          Y, base_y + i * 30
+        ).with(
+          COLOR, self.text_color_channel
+        ).add()
+      }
+    }
+
+    // add y axis label
+    if self.y_axis_label.length > 0 {
+      self.y_axis_label.to_obj().with(
+        X, start_x - 12
+      ).with(
+        Y, start_y + utils.grid(v_range_end + 1) / 2
+      ).with(
+        ROTATION, 90
+      ).with(
+        COLOR, self.text_color_channel
+      ).add()
+    }
+
+    // vertical axis
+    for i in 0..v_range_end {
+      if i > 0 {
+        // vertical lines
+        for j in 1..(between_y_step + 1) {
+          $.add(obj {
+            OBJ_ID: 1756,
+            X: start_x + 30,
+            Y: start_y + utils.grid(between_y_step * (i - 1) + j + 1),
+            GROUPS: groups,
+            COLOR: self.line_color_channel
+          })
+        }
+      }
+
+      // step lines
+      $.add(obj {
+        OBJ_ID: 1756,
+        X: start_x + 30,
+        Y: start_y + utils.grid(between_y_step * i + 1) + 15,
+        ROTATION: 90,
+        SCALING: 0.5,
+        GROUPS: groups,
+        COLOR: self.line_color_channel
+      })
+
+      // step text
+      @string(y_step * i).to_obj().with(
+        X, start_x + 15
+      ).with(
+        Y, start_y + utils.grid(between_y_step * i + 1) + 15
+      ).with(
+        SCALING, 0.5
+      ).with(
+        COLOR, self.text_color_channel
+      ).add()
+    }
+
+    // horizontal axis
+    let accum = 0
+    
+    for j in 0..labels_length.length {
+      // horizontal lines
+      len = labels_length[j]
+
+      for i in 1..(len + 1) {
+        $.add(obj {
+          OBJ_ID: 1756,
+          X: start_x + accum + utils.grid(i + 1),
+          Y: start_y + 30,
+          ROTATION: 90,
+          GROUPS: groups,
+          COLOR: self.line_color_channel
+        })
+      }
+
+      x = start_x + accum + utils.grid(len / 2 + 1.5)
+
+      // label
+      labels[j].to_obj().with(
+        Y, start_y + 15
+      ).with(
+        X, x
+      ).with(
+        COLOR, self.text_color_channel
+      ).add()
+
+      // create bar color
+      color = @color(j + 1)
+      // remove unnecessary triggers
+      if val_dict[j].color != '#ffffff' {
+        -> color.set(hex(val_dict[j].color))
+      }
+
+      // bars
+      range_end = $.ceil(values[j] / y_step * between_y_step)
+      for j in 1..range_end {
+        $.add(obj {
+          OBJ_ID: 208,
+          X: x,
+          Y: start_y + utils.grid(j + 1),
+          GROUPS: groups,
+          COLOR: color,
+          COLOR_2: color
+        })
+      }
+
+      // add last object to be able to add values that is not a multiple of step
+      amount_to_mv = 30 * (between_y_step / y_step) * (values[j] - utils.floor(values[j], y_step / between_y_step)) /* * (1 / y_step) */
+      $.add(obj {
+        OBJ_ID: 208,
+        X: x,
+        Y: start_y + utils.grid(range_end + (0 if amount_to_mv > 0 else 1)) + amount_to_mv,
+        GROUPS: groups,
+        COLOR: color,
+        COLOR_2: color
+      })
+
+      accum += utils.grid(len) + 15
+    }
+  }
+}
