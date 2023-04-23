@@ -74,6 +74,7 @@ impl @bar_chart {
       x = start_x + utils.grid(labels_length.sum() / 2 + 1)
       texts = self.title.split('\n').reverse() // split returns them in reverse order
 
+      // to be able to center the text when newline is used
       for i in 0..texts.length {
         texts[i].to_obj().with(
           X, x

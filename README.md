@@ -38,7 +38,7 @@ chart.show(start_pos=[10, 1])
 
 ### Resulting Bar Chart:
 
-![The resulting graph in GD](https://github.com/sertdfyguhi/GRPH/example.png)
+![The resulting graph in GD](https://raw.githubusercontent.com/sertdfyguhi/GRPH/master/example.png)
 
 ## Todo
 
