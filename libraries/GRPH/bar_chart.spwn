@@ -57,12 +57,19 @@ impl @bar_chart {
     self.y_axis_label = label
   },
 
-  show: (self, start_pos: @array = [0, 0], y_step: @number = 1, between_y_step: @number = 1, groups: @array = []) {
+  show: (
+    self,
+    start_pos: @array = [0, 0],
+    y_step: @number = 1,
+    between_y_step: @number = 1,
+    groups: @array = [],
+    sorting_array: @array = []
+  ) {
     // setup graph axis
-    labels = self.values.keys()
+    labels = sorting_array if sorting_array.length > 0 else self.values.labels()
     if labels.length == 0 { throw "Nothing has been added to the graph yet." }
 
-    val_dict = self.values.values()
+    val_dict = labels,map(label => self.values[label])
     values = val_dict.map(x => x.value if x is @dictionary else x)
     start_x = utils.grid(start_pos[0]) + 45 if self.y_axis_label.length > 0 else 15
     start_y = utils.grid(start_pos[1]) + 15

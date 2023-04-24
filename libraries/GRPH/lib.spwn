@@ -1,2 +1,11 @@
 import "line_graph.spwn"
 import "bar_chart.spwn"
+
+// utils
+calc_y_step = (values: @dictionary, max_height: @number = 100, between_y_step: @number = 1) {
+  return $.ceil(values.values().max() / max_height * between_y_step)
+}
+
+return {
+  calc_y_step
+}

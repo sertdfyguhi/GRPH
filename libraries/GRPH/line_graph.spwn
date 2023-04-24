@@ -65,11 +65,18 @@ impl @line_graph {
     self.line_color = color
   },
 
-  show: (self, start_pos: @array = [0, 0], y_step: @number = 1, between_y_step: @number = 1, groups: @array = []) {
-    labels = self.values.keys()
+  show: (
+    self,
+    start_pos: @array = [0, 0],
+    y_step: @number = 1,
+    between_y_step: @number = 1,
+    groups: @array = [],
+    sorting_array: @array = []
+  ) {
+    labels = sorting_array if sorting_array.length > 0 else self.values.labels()
     if labels.length == 0 { throw "Nothing has been added to the graph yet." }
 
-    values = self.values.values()
+    values = labels.map(label => self.values[label])
     start_x = utils.grid(start_pos[0]) + 45 if self.y_axis_label.length > 0 else 15
     start_y = utils.grid(start_pos[1]) + 45 if self.x_axis_label.length > 0 else 15
     labels_length = labels.map(x => $.ceil(x.length * 0.6 + 3))

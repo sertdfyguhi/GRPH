@@ -1,0 +1,21 @@
+grph = import GRPH
+
+STARTING_NUMBER = 15
+
+let graph = @line_graph::new(title="3x+1 starting at 15")
+let n = STARTING_NUMBER
+let sorting_array = []
+
+while n > 1 {
+  if n % 2 == 0 {
+    n /= 2
+  } else {
+    n = n * 3 - 1
+  }
+
+  sorting_array.push(@string(n))
+
+  graph.add(@string(n), n)
+}
+
+graph.show([5, 1], y_step=grph.calc_y_step(graph.values, 10), sorting_array=sorting_array)
