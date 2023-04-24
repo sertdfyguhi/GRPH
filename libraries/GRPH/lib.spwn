@@ -1,1 +1,2 @@
+import "line_graph.spwn"
 import "bar_chart.spwn"

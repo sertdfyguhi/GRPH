@@ -1,51 +1,51 @@
 utils = import "utils.spwn"
 extract obj_props
 
-type @bar_chart
-impl @bar_chart {
+calculate_line_len = (a: @array, b: @array) {
+  return $.sqrt((b[0] - a[0]) ^ 2 + (b[1] - a[1]) ^ 2)
+}
+
+calculate_line = (a: @array, b: @array, line_length: @number, distance: @number) {
+  return [
+    a[0] + (b[0] - a[0]) * (distance / line_length),
+    a[1] + (b[1] - a[1]) * (distance / line_length)
+  ]
+}
+
+type @line_graph
+impl @line_graph {
   new: (
     values: @dictionary = {},
     title: @string = "",
+    x_axis_label: @string = "",
     y_axis_label: @string = "",
+    line_color: @chroma = hex("#ffffff"),
     axis_color_channel: @color = ?c,
     text_color_channel: @color = ?c
   ) {
-    let temp = @bar_chart::{
+    let temp = @line_graph::{
       values: {},
       title,
+      x_axis_label,
       y_axis_label,
+      line_color,
       axis_color_channel,
       text_color_channel
     }
 
-    // to be able to check for non number values
+    // check for type errors
     temp.add_dict(values)
     return temp
   },
 
-  add: (self, label: @string, value: @number, color: @chroma = hex("#FFFFFF")) {
-    self.values.set(label, { value, color })
+  add: (self, label: @string, value: @number) {
+    self.values.set(label, value)
   },
 
   add_dict: (self, values: @dictionary) {
     for [label, value] in values {
-      match value {
-        @number: self.values.set(label, { value, color: hex("#FFFFFF") }),
-        @dictionary: () {
-          if !("value" in value) {
-            throw "Value of " + label + " not provided in dictionary."
-          }
-
-          let temp = value
-          if !("color" in value) {
-            if !(value.color is @color) { throw "Color should be of type @chroma." }
-            temp.set("color", hex("#FFFFFF"))
-          }
-
-          self.values.set(label, temp)
-        } (),
-        else: () { throw "Value should be of type @dictionary or @number." } ()
-      }
+      if !(value is @number) { throw "Value of " + label + " should be of type @number." }
+      self.values.set(label, value)
     }
   },
 
@@ -53,32 +53,41 @@ impl @bar_chart {
     self.title = label
   },
 
+  set_x_axis_label: (self, label: @string) {
+    self.x_axis_label = label
+  },
+
   set_y_axis_label: (self, label: @string) {
     self.y_axis_label = label
   },
 
+  set_line_color: (self, color: @string) {
+    self.line_color = color
+  },
+
   show: (self, start_pos: @array = [0, 0], y_step: @number = 1, between_y_step: @number = 1, groups: @array = []) {
-    // setup graph axis
     labels = self.values.keys()
     if labels.length == 0 { throw "Nothing has been added to the graph yet." }
 
-    val_dict = self.values.values()
-    values = val_dict.map(x => x.value if x is @dictionary else x)
+    values = self.values.values()
     start_x = utils.grid(start_pos[0]) + 45 if self.y_axis_label.length > 0 else 15
-    start_y = utils.grid(start_pos[1]) + 15
-    labels_length = labels.map(x => $.ceil(x.length * 0.6 + 1))
+    start_y = utils.grid(start_pos[1]) + 45 if self.x_axis_label.length > 0 else 15
+    labels_length = labels.map(x => $.ceil(x.length * 0.6 + 3))
     v_range_end = $.ceil(values.max() / y_step) + 1
+    middle = start_x + utils.grid(labels_length.sum() / 2 + 1.5)
+
+    // create line color channel
+    line_color_channel = utils.create_color_channel(self.line_color)
 
     // add title text
     if self.title.length > 0 {
       base_y = start_y + utils.grid(v_range_end + 2.5)
-      x = start_x + utils.grid(labels_length.sum() / 2 + 1)
       texts = self.title.split('\n').reverse() // split returns them in reverse order
 
       // to be able to center the text when newline is used
       for i in 0..texts.length {
         texts[i].to_obj().with(
-          X, x
+          X, middle
         ).with(
           Y, base_y + i * 30
         ).with(
@@ -97,6 +106,19 @@ impl @bar_chart {
         Y, start_y + utils.grid(v_range_end + 1) / 2
       ).with(
         ROTATION, 90
+      ).with(
+        COLOR, self.text_color_channel
+      ).with(
+        GROUPS, groups
+      ).add()
+    }
+
+    // add x axis label
+    if self.x_axis_label.length > 0 {
+      self.x_axis_label.to_obj().with(
+        X, middle
+      ).with(
+        Y, start_y - 20
       ).with(
         COLOR, self.text_color_channel
       ).with(
@@ -145,6 +167,7 @@ impl @bar_chart {
     }
 
     // horizontal axis
+    let positions = []
     let accum = 0
     
     for j in 0..labels_length.length {
@@ -175,34 +198,53 @@ impl @bar_chart {
         GROUPS, groups
       ).add()
 
-      // create bar color
-      color = utils.create_color_channel(val_dict[j].color)
+      // value dot
+      amount_to_mv = 30 * (between_y_step / y_step) * (values[j] - utils.floor(values[j], y_step / between_y_step))
+      y = start_y + utils.grid(
+        $.ceil(values[j] / y_step * between_y_step) + (0.5 if amount_to_mv > 0 else 1.5)
+      ) + amount_to_mv
 
-      // bars
-      range_end = $.ceil(values[j] / y_step * between_y_step)
-      for j in 1..range_end {
+      $.add(obj {
+        OBJ_ID: 725,
+        X: x,
+        Y: y,
+        GROUPS: groups,
+        COLOR: line_color_channel,
+        SCALING: 1.8
+      })
+
+      // connecting points with line to become a line graph
+      if j > 0 {
+        last_pos = positions[positions.length - 1]
+        line_length = calculate_line_len([x, y], last_pos)
+        line_angle = $.atan2(x - last_pos[0], y - last_pos[1]) * 180 / PI
+
+        for k in 0..$.ceil(line_length / 30 - 1) {
+          line_end = calculate_line(last_pos, [x, y], line_length, k * 30 + 15)
+
+          $.add(obj {
+            OBJ_ID: 1756,
+            X: line_end[0],
+            Y: line_end[1],
+            ROTATION: line_angle,
+            GROUPS: groups,
+            COLOR: line_color_channel
+          })
+        }
+
+        lln_end = calculate_line([x, y], last_pos, line_length, 15)
         $.add(obj {
-          OBJ_ID: 208,
-          X: x,
-          Y: start_y + utils.grid(j + 1),
+          OBJ_ID: 1756,
+          X: lln_end[0],
+          Y: lln_end[1],
+          ROTATION: line_angle,
           GROUPS: groups,
-          COLOR: color,
-          COLOR_2: color
+          COLOR: line_color_channel
         })
       }
 
-      // add last object to be able to add values that is not a multiple of step
-      amount_to_mv = 30 * (between_y_step / y_step) * (values[j] - utils.floor(values[j], y_step / between_y_step))
-      $.add(obj {
-        OBJ_ID: 208,
-        X: x,
-        Y: start_y + utils.grid(range_end + (0 if amount_to_mv > 0 else 1)) + amount_to_mv,
-        GROUPS: groups,
-        COLOR: color,
-        COLOR_2: color
-      })
-
       accum += utils.grid(len) + 15
+      positions.push([x, y])
     }
   }
 }

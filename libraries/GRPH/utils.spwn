@@ -1,3 +1,5 @@
+extract obj_props
+
 grid = (n: @number) {
   return 15 + (n - 1) * 30
 }
@@ -10,8 +12,26 @@ floor = (n: @number, round_to: @number = 1) {
   return $.floor(n / round_to) * round_to
 }
 
+create_color_channel = (color: @chroma) {
+  cchannel = ?c
+  c_rgb = color.rgb8()
+
+  $.add(obj {
+    OBJ_ID: 899,
+    X: 0,
+    Y: 2000,
+    TARGET_COLOR: cchannel,
+    TRIGGER_RED: c_rgb[0],
+    TRIGGER_GREEN: c_rgb[1],
+    TRIGGER_BLUE: c_rgb[2]
+  })
+
+  return cchannel
+}
+
 return {
   grid,
   floor,
-  ceil
+  ceil,
+  create_color_channel
 }

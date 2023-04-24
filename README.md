@@ -1,7 +1,7 @@
 # GRPH: A compile-time graphing library in SPWN.
 
 A compile-time graphing library in SPWN.  
-Currently only implements bar charts.
+Currently only implements bar charts and line graphs.
 
 ## Installation
 
@@ -43,6 +43,7 @@ chart.show(start_pos=[10, 1])
 ## Todo
 
 - [ ] Add documentation
-- [ ] Add line graph
+- [x] Add line graph
+- [ ] Add scatter graph
 - [ ] Fix bug where block is out of graph when value is lower than 1
-- [ ] Add functionality to have the value shown on bar chart
+- [ ] Add functionality to have the value shown on bar chart and line graph
