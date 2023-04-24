@@ -6,13 +6,13 @@ let chart = @bar_chart::new(
       value: 1,
       color: hex("#2451FF")
     },
-    // "Bloodlust": {
-    //   value: 8,
-    //   color: hex("#F0001F")
-    // }
+    "Bloodlust": {
+      value: 8,
+      color: hex("#F0001F")
+    }
   },
   title="The Difficulty of\nDifferent Geometry Dash Levels",
   y_axis_label="Difficulty"
 )
-// chart.add("Back on Track", 2, color=hex("#FF8329"))
+chart.add("Back on Track", 2, color=hex("#FF8329"))
 chart.show(start_pos=[10, 1])

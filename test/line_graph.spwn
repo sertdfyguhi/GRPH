@@ -1,15 +1,16 @@
 import GRPH
 
+let d = {}
+
+for i in 0..20 {
+  d[@string(i)] = $.random() * 50
+}
+
 let chart = @line_graph::new(
-  {
-    "a": 1,
-    "b": 4,
-    "c": 3,
-    "d": 8
-  },
+  d,
   title="Title",
   x_axis_label="X axis",
   y_axis_label="Y axis",
   line_color=hex("#FF99A5")
 )
-chart.show([5, 1])
+chart.show([5, 0], between_y_step=1)

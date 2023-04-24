@@ -18,21 +18,21 @@ git clone https://github.com/sertdfyguhi/GRPH.git
 ```ts
 import GRPH
 
-chart = @bar_chart::new(
+let chart = @bar_chart::new(
   {
     "Stereo Madness": {
       value: 1,
-      color: "#2451FF"
+      color: hex("#2451FF")
     },
     "Bloodlust": {
       value: 8,
-      color: "#F0001F"
+      color: hex("#F0001F")
     }
   },
   title="The Difficulty of\nDifferent Geometry Dash Levels",
   y_axis_label="Difficulty"
 )
-chart.add("Back on Track", 2, color="#FF8329")
+chart.add("Back on Track", 2, color=hex("#FF8329"))
 chart.show(start_pos=[10, 1])
 ```
 
