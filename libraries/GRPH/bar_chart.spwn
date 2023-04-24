@@ -26,15 +26,7 @@ impl @bar_chart {
   add: (self, label: @string, value: @number, color: @string = '#ffffff') {
     self.values.set(label, { value, color })
   },
-
-  set_title: (self, label: @string) {
-    self.y_axis_label = label
-  },
-
-  set_y_axis_label: (self, label: @string) {
-    self.y_axis_label = label
-  },
-
+  
   add_dict: (self, values: @dictionary) {
     for [label, value] in values {
       match value {
@@ -56,6 +48,14 @@ impl @bar_chart {
     }
   },
 
+  set_title: (self, label: @string) {
+    self.title = label
+  },
+
+  set_y_axis_label: (self, label: @string) {
+    self.y_axis_label = label
+  },
+
   show: (self, start_pos: @array = [0, 0], y_step: @number = 1, between_y_step: @number = 1, groups: @array = []) {
     // setup graph axis
     labels = self.values.keys()
@@ -63,7 +63,7 @@ impl @bar_chart {
 
     val_dict = self.values.values()
     values = val_dict.map(x => x.value if x is @dictionary else x)
-    start_x = utils.grid(start_pos[0]) + 15 + 30 if self.y_axis_label.length > 0 else 0
+    start_x = utils.grid(start_pos[0]) + 45 if self.y_axis_label.length > 0 else 15
     start_y = utils.grid(start_pos[1]) + 15
     labels_length = labels.map(x => $.ceil(x.length * 0.6 + 1))
     v_range_end = $.ceil(values.max() / y_step) + 1
@@ -82,6 +82,8 @@ impl @bar_chart {
           Y, base_y + i * 30
         ).with(
           COLOR, self.text_color_channel
+        ).with(
+          GROUPS, groups
         ).add()
       }
     }
@@ -96,6 +98,8 @@ impl @bar_chart {
         ROTATION, 90
       ).with(
         COLOR, self.text_color_channel
+      ).with(
+        GROUPS, groups
       ).add()
     }
 
@@ -118,7 +122,7 @@ impl @bar_chart {
       $.add(obj {
         OBJ_ID: 1756,
         X: start_x + 30,
-        Y: start_y + utils.grid(between_y_step * i + 1) + 15,
+        Y: start_y + utils.grid(between_y_step * i + 1.5),
         ROTATION: 90,
         SCALING: 0.5,
         GROUPS: groups,
@@ -129,11 +133,13 @@ impl @bar_chart {
       @string(y_step * i).to_obj().with(
         X, start_x + 15
       ).with(
-        Y, start_y + utils.grid(between_y_step * i + 1) + 15
+        Y, start_y + utils.grid(between_y_step * i + 1.5)
       ).with(
         SCALING, 0.5
       ).with(
         COLOR, self.text_color_channel
+      ).with(
+        GROUPS, groups
       ).add()
     }
 
@@ -164,6 +170,8 @@ impl @bar_chart {
         X, x
       ).with(
         COLOR, self.text_color_channel
+      ).with(
+        GROUPS, groups
       ).add()
 
       // create bar color
