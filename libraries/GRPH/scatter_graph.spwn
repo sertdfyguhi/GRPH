@@ -1,0 +1,190 @@
+utils = import "utils.spwn"
+extract obj_props
+
+type @scatter_graph
+impl @scatter_graph {
+  new: (
+    values: @array = [],
+    title: @string = "",
+    x_axis_label: @string = "",
+    y_axis_label: @string = "",
+    axis_color_channel: @color = ?c,
+    text_color_channel: @color = ?c
+  ) {
+    let temp = @scatter_graph::{
+      values: [],
+      title,
+      x_axis_label,
+      y_axis_label,
+      axis_color_channel,
+      text_color_channel
+    }
+
+    // check for type errors
+    temp.add_array(values)
+    return temp
+  },
+
+  add: (self, pos: @array, color: @chroma = null) {
+    self.add_array([{pos, color}])
+  },
+
+  add_array: (self, values: @array) {
+    for value in values {
+      if !(value is @dictionary) { throw "Value is not of type @dictionary." }
+      if !("pos" in value) { throw "Position not provided." }
+
+      color = value.color if "color" in value else null
+      
+      if !(value.pos is @array) { throw "Position provided is not of type @array." }
+      if !(color is @chroma|@NULL) { throw "Color provided is not of type @chroma." }
+      if value.pos.length < 2 { throw "Position provided is not of length 2." }
+
+      pos = value.pos[:2]
+
+      pos.map((v) {
+        if !(v is @number) { throw "Position is not of type [@number]." }
+      })
+
+      self.values.push({pos, color})
+    }
+  },
+
+  set_title: (self, label: @string) {
+    self.title = label
+  },
+
+  set_x_axis_label: (self, label: @string) {
+    self.x_axis_label = label
+  },
+
+  set_y_axis_label: (self, label: @string) {
+    self.y_axis_label = label
+  },
+
+  show: (
+    self,
+    start_pos: @array = [0, 0],
+    x_step: @number = 1,
+    y_step: @number = 1,
+    between_x_step: @number = 1,
+    between_y_step: @number = 1,
+    groups: @array = [],
+  ) {
+    if self.values.length == 0 { throw "Nothing has been added to the graph yet." }
+
+    let [x_max, y_max] = [0, 0]
+    for v in self.values {
+      [x, y] = v.pos
+      if x > x_max { x_max = x }
+      if y > y_max { y_max = y }
+    }
+
+    start_x = utils.grid(start_pos[0]) + 45 if self.y_axis_label.length > 0 else 15
+    start_y = utils.grid(start_pos[1]) + 45 if self.x_axis_label.length > 0 else 15
+    v_range_end = $.ceil(y_max / y_step) + 1
+    middle = start_x + utils.grid(x_max / x_step * between_x_step / 2 + 1.5) // TODO: sometimes + 1.5 sometimes + 1 figure that out
+
+    // add title text
+    utils.create_title_text(self.title, v_range_end, between_y_step, self.text_color_channel, groups, middle, start_y)
+
+    // add y axis label
+    utils.create_y_axis_label(self.y_axis_label, v_range_end, between_y_step, self.text_color_channel, groups, start_y, start_x)
+
+     // add x axis label
+    utils.create_x_axis_label(self.x_axis_label, v_range_end, self.text_color_channel, groups, middle, start_y)
+
+    // vertical axis
+    for i in 0..v_range_end {
+      if i > 0 {
+        // vertical lines
+        for j in 1..(between_y_step + 1) {
+          $.add(obj {
+            OBJ_ID: 1756,
+            X: start_x + 30,
+            Y: start_y + utils.grid(between_y_step * (i - 1) + j + 1),
+            GROUPS: groups,
+            COLOR: self.axis_color_channel
+          })
+        }
+      }
+
+      // step lines
+      $.add(obj {
+        OBJ_ID: 1756,
+        X: start_x + 30,
+        Y: start_y + utils.grid(between_y_step * i + 1.5),
+        ROTATION: 90,
+        SCALING: 0.5,
+        GROUPS: groups,
+        COLOR: self.axis_color_channel
+      })
+
+      // step text
+      @string(y_step * i).to_obj().with(
+        X, start_x + 15
+      ).with(
+        Y, start_y + utils.grid(between_y_step * i + 1.5)
+      ).with(
+        SCALING, 0.5
+      ).with(
+        COLOR, self.text_color_channel
+      ).with(
+        GROUPS, groups
+      ).add()
+    }
+
+    // horizontal axis
+    for i in 0..$.ceil(x_max / x_step) + 1 {
+      if i > 0 {
+        // horizontal lines
+        for j in 1..(between_x_step + 1) {
+          $.add(obj {
+            OBJ_ID: 1756,
+            X: start_x + utils.grid(between_x_step * (i - 1) + j + 1),
+            Y: start_y + 30,
+            ROTATION: 90,
+            GROUPS: groups,
+            COLOR: self.axis_color_channel
+          })
+        }
+      }
+
+      // step lines
+      $.add(obj {
+        OBJ_ID: 1756,
+        X: start_x + utils.grid(between_x_step * i + 1.5),
+        Y: start_y + 30,
+        SCALING: 0.5,
+        GROUPS: groups,
+        COLOR: self.axis_color_channel
+      })
+
+      // step text
+      @string(x_step * i).to_obj().with(
+        X, start_x + utils.grid(between_x_step * i + 1.5)
+      ).with(
+        Y, start_y + 15
+      ).with(
+        SCALING, 0.5
+      ).with(
+        COLOR, self.text_color_channel
+      ).with(
+        GROUPS, groups
+      ).add()
+    }
+
+    for point in self.values {
+      color = utils.create_color_channel(point.color) if point.color != null else ?c
+
+      $.add(obj {
+        OBJ_ID: 725,
+        X: start_x + utils.grid(point.pos[0] / x_step * between_x_step) + 45,
+        Y: start_y + utils.grid(point.pos[1] / y_step * between_y_step) + 45,
+        GROUPS: groups,
+        COLOR: color,
+        SCALING: 1.8
+      })
+    }
+  }
+}

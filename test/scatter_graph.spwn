@@ -1,0 +1,18 @@
+import GRPH
+
+// let points = []
+
+// for _ in 0..100 {
+//   points.push({ pos: [$.random() * 25, $.random() * 25] })
+// }
+
+let sgraph = @scatter_graph::new(
+  // points,
+  [{pos: [1, 2.5]}, {pos: [4, 3.4]}],
+  x_axis_label="X axis",
+  y_axis_label="Y axis",
+  title="Your Mom"
+)
+
+sgraph.show([5, 1])
+sgraph.show([15, 1], between_y_step=3, between_x_step=2)

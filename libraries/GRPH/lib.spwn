@@ -1,5 +1,6 @@
 import "line_graph.spwn"
 import "bar_chart.spwn"
+import "scatter_graph.spwn"
 
 // utils
 calc_y_step = (values: @dictionary, max_height: @number = 100, between_y_step: @number = 1) {

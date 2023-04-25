@@ -13,6 +13,8 @@ floor = (n: @number, round_to: @number = 1) {
 }
 
 create_color_channel = (color: @chroma) {
+  if color == hex('#ffffff') { return ?c }
+
   cchannel = ?c
   c_rgb = color.rgb8()
 
@@ -29,9 +31,87 @@ create_color_channel = (color: @chroma) {
   return cchannel
 }
 
+// TODO: fix up parameter naming
+// TODO: use class extension instead of util functions
+create_y_axis_label = (
+  y_axis_label: @string,
+  v_range_end: @number,
+  between_y_step: @number,
+  color_channel: @color,
+  groups: @array,
+  start_y: @number,
+  start_x: @number
+) {
+  if y_axis_label.length == 0 { return }
+
+  y_axis_label.to_obj().with(
+    X, start_x - 12
+  ).with(
+    Y, start_y + grid((v_range_end - 1) * between_y_step / 2 + 1.5)
+  ).with(
+    ROTATION, 90
+  ).with(
+    COLOR, color_channel
+  ).with(
+    GROUPS, groups
+  ).add()
+}
+
+create_x_axis_label = (
+  x_axis_label: @string,
+  v_range_end: @number,
+  color_channel: @color,
+  groups: @array,
+  middle: @number,
+  start_y: @number
+) {
+  if x_axis_label.length == 0 { return }
+
+  x_axis_label.to_obj().with(
+    X, middle
+  ).with(
+    Y, start_y - 20
+  ).with(
+    COLOR, color_channel
+  ).with(
+    GROUPS, groups
+  ).add()
+}
+
+create_title_text = (
+  title: @string,
+  v_range_end: @number,
+  between_y_step: @number,
+  color_channel: @color,
+  groups: @array,
+  middle: @number,
+  start_y: @number
+) {
+  if title.length == 0 { return }
+
+  base_y = start_y + grid((v_range_end - 1) * between_y_step + 3.5)
+  texts = title.split('\n').reverse() // split returns them in reverse order
+
+  // to be able to center the text when newline is used
+  for i in 0..texts.length {
+    texts[i].to_obj().with(
+      X, middle
+    ).with(
+      Y, base_y + i * 30
+    ).with(
+      COLOR, color_channel
+    ).with(
+      GROUPS, groups
+    ).add()
+  }
+}
+
 return {
   grid,
   floor,
   ceil,
-  create_color_channel
+  create_color_channel,
+  create_y_axis_label,
+  create_x_axis_label,
+  create_title_text
 }

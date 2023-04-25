@@ -73,7 +73,7 @@ impl @line_graph {
     groups: @array = [],
     sorting_array: @array = []
   ) {
-    labels = sorting_array if sorting_array.length > 0 else self.values.labels()
+    labels = sorting_array if sorting_array.length > 0 else self.values.keys()
     if labels.length == 0 { throw "Nothing has been added to the graph yet." }
 
     values = labels.map(label => self.values[label])
@@ -87,51 +87,13 @@ impl @line_graph {
     line_color_channel = utils.create_color_channel(self.line_color)
 
     // add title text
-    if self.title.length > 0 {
-      base_y = start_y + utils.grid(v_range_end + 2.5)
-      texts = self.title.split('\n').reverse() // split returns them in reverse order
-
-      // to be able to center the text when newline is used
-      for i in 0..texts.length {
-        texts[i].to_obj().with(
-          X, middle
-        ).with(
-          Y, base_y + i * 30
-        ).with(
-          COLOR, self.text_color_channel
-        ).with(
-          GROUPS, groups
-        ).add()
-      }
-    }
+    utils.create_title_text(self.title, v_range_end, between_y_step, self.text_color_channel, groups, middle, start_y)
 
     // add y axis label
-    if self.y_axis_label.length > 0 {
-      self.y_axis_label.to_obj().with(
-        X, start_x - 12
-      ).with(
-        Y, start_y + utils.grid(v_range_end + 1) / 2
-      ).with(
-        ROTATION, 90
-      ).with(
-        COLOR, self.text_color_channel
-      ).with(
-        GROUPS, groups
-      ).add()
-    }
+    utils.create_y_axis_label(self.y_axis_label, v_range_end, between_y_step, self.text_color_channel, groups, start_y, start_x)
 
     // add x axis label
-    if self.x_axis_label.length > 0 {
-      self.x_axis_label.to_obj().with(
-        X, middle
-      ).with(
-        Y, start_y - 20
-      ).with(
-        COLOR, self.text_color_channel
-      ).with(
-        GROUPS, groups
-      ).add()
-    }
+    utils.create_x_axis_label(self.x_axis_label, v_range_end, self.text_color_channel, groups, middle, start_y)
 
     // vertical axis
     for i in 0..v_range_end {

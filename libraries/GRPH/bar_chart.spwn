@@ -23,14 +23,14 @@ impl @bar_chart {
     return temp
   },
 
-  add: (self, label: @string, value: @number, color: @chroma = hex("#FFFFFF")) {
+  add: (self, label: @string, value: @number, color: @chroma = null) {
     self.values.set(label, { value, color })
   },
 
   add_dict: (self, values: @dictionary) {
     for [label, value] in values {
       match value {
-        @number: self.values.set(label, { value, color: hex("#FFFFFF") }),
+        @number: self.values.set(label, { value, color: null }),
         @dictionary: () {
           if !("value" in value) {
             throw "Value of " + label + " not provided in dictionary."
@@ -38,8 +38,8 @@ impl @bar_chart {
 
           let temp = value
           if !("color" in value) {
-            if !(value.color is @color) { throw "Color should be of type @chroma." }
-            temp.set("color", hex("#FFFFFF"))
+            if !(value.color is @chroma) { throw "Color should be of type @chroma." }
+            temp.set("color", null)
           }
 
           self.values.set(label, temp)
@@ -66,10 +66,10 @@ impl @bar_chart {
     sorting_array: @array = []
   ) {
     // setup graph axis
-    labels = sorting_array if sorting_array.length > 0 else self.values.labels()
+    labels = sorting_array if sorting_array.length > 0 else self.values.keys()
     if labels.length == 0 { throw "Nothing has been added to the graph yet." }
 
-    val_dict = labels,map(label => self.values[label])
+    val_dict = labels.map(label => self.values[label])
     values = val_dict.map(x => x.value if x is @dictionary else x)
     start_x = utils.grid(start_pos[0]) + 45 if self.y_axis_label.length > 0 else 15
     start_y = utils.grid(start_pos[1]) + 15
@@ -77,39 +77,18 @@ impl @bar_chart {
     v_range_end = $.ceil(values.max() / y_step) + 1
 
     // add title text
-    if self.title.length > 0 {
-      base_y = start_y + utils.grid(v_range_end + 2.5)
-      x = start_x + utils.grid(labels_length.sum() / 2 + 1)
-      texts = self.title.split('\n').reverse() // split returns them in reverse order
-
-      // to be able to center the text when newline is used
-      for i in 0..texts.length {
-        texts[i].to_obj().with(
-          X, x
-        ).with(
-          Y, base_y + i * 30
-        ).with(
-          COLOR, self.text_color_channel
-        ).with(
-          GROUPS, groups
-        ).add()
-      }
-    }
+    utils.create_title_text(
+      self.title,
+      v_range_end,
+      between_y_step,
+      self.text_color_channel,
+      groups,
+      start_x + utils.grid(labels_length.sum() / 2 + 1.5),
+      start_y
+    )
 
     // add y axis label
-    if self.y_axis_label.length > 0 {
-      self.y_axis_label.to_obj().with(
-        X, start_x - 12
-      ).with(
-        Y, start_y + utils.grid(v_range_end + 1) / 2
-      ).with(
-        ROTATION, 90
-      ).with(
-        COLOR, self.text_color_channel
-      ).with(
-        GROUPS, groups
-      ).add()
-    }
+    utils.create_y_axis_label(self.y_axis_label, v_range_end, between_y_step, self.text_color_channel, groups, start_y, start_x)
 
     // vertical axis
     for i in 0..v_range_end {
@@ -183,7 +162,7 @@ impl @bar_chart {
       ).add()
 
       // create bar color
-      color = utils.create_color_channel(val_dict[j].color)
+      color = utils.create_color_channel(val_dict[j].color) if "color" in val_dict[j] else ?c
 
       // bars
       range_end = $.ceil(values[j] / y_step * between_y_step)
