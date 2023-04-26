@@ -77,17 +77,25 @@ impl @line_graph {
     if labels.length == 0 { throw "Nothing has been added to the graph yet." }
 
     let values = []
+    let values_max = 0
     let labels_length = []
+    let labels_length_sum = 0
 
     for label in labels {
       values.push(self.values[label])
-      labels_length.push($.ceil(label.length * 0.6 + 3))
+      if self.values[label] > values_max {
+        values_max = self.values[label]
+      }
+
+      len = $.ceil(label.length * 0.6 + 3)
+      labels_length.push(len)
+      labels_length_sum += len
     }
     
     start_x = utils.grid(start_pos[0]) + 45 if self.y_axis_label.length > 0 else 15
     start_y = utils.grid(start_pos[1]) + 45 if self.x_axis_label.length > 0 else 15
-    v_range_end = $.ceil(values.max() / y_step) + 1
-    middle = start_x + utils.grid(labels_length.sum() / 2 + 1.5)
+    v_range_end = $.ceil(values_max / y_step) + 1
+    middle = start_x + utils.grid(labels_length_sum / 2 + 1.5)
 
     // create line color channel
     line_color_channel = utils.create_color_channel(self.line_color)

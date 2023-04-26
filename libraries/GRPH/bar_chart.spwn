@@ -69,22 +69,25 @@ impl @bar_chart {
     labels = sorting_array if sorting_array.length > 0 else self.values.keys()
     if labels.length == 0 { throw "Nothing has been added to the graph yet." }
 
-    let labels_length =[]
+    let labels_length = []
+    let labels_length_sum = 0
     let val_dict = []
     let values = []
     let v_max = 0
 
     for label in labels {
-      val_dict.push(self.values[label])
+      x = self.values[label]
+      val_dict.push(x)
+      val = x.value if x is @dictionary else x
+      values.push(val)
 
-      val = self.values[label].value
-      values.push(val.value if val is @dictionary else val)
-
-      labels_length.push($.ceil(label.length * 0.6 + 1))
-
-      if values.length > 0  && values[values.length - 1] > v_max {
-        v_max = values[values.length - 1]
+      if val > v_max {
+        v_max = val
       }
+
+      len = $.ceil(label.length * 0.6 + 3)
+      labels_length.push(len)
+      labels_length_sum += len
     }
 
     start_x = utils.grid(start_pos[0]) + 45 if self.y_axis_label.length > 0 else 15
@@ -98,7 +101,7 @@ impl @bar_chart {
       between_y_step,
       self.text_color_channel,
       groups,
-      start_x + utils.grid(labels_length.sum() / 2 + 1.5),
+      start_x + utils.grid(labels_length_sum / 2 + 1.5),
       start_y
     )
 
