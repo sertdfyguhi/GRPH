@@ -83,7 +83,7 @@ impl @scatter_graph {
     start_x = utils.grid(start_pos[0]) + 45 if self.y_axis_label.length > 0 else 15
     start_y = utils.grid(start_pos[1]) + 45 if self.x_axis_label.length > 0 else 15
     v_range_end = $.ceil(y_max / y_step) + 1
-    middle = start_x + utils.grid(x_max / x_step * between_x_step / 2 + 1.5) // TODO: sometimes + 1.5 sometimes + 1 figure that out
+    middle = start_x + utils.grid(x_max / x_step * between_x_step / 2 + 1.5)
 
     // add title text
     utils.create_title_text(self.title, v_range_end, between_y_step, self.text_color_channel, groups, middle, start_y)

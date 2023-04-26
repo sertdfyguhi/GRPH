@@ -76,10 +76,16 @@ impl @line_graph {
     labels = sorting_array if sorting_array.length > 0 else self.values.keys()
     if labels.length == 0 { throw "Nothing has been added to the graph yet." }
 
-    values = labels.map(label => self.values[label])
+    let values = []
+    let labels_length = []
+
+    for label in labels {
+      values.push(self.values[label])
+      labels_length.push($.ceil(label.length * 0.6 + 3))
+    }
+    
     start_x = utils.grid(start_pos[0]) + 45 if self.y_axis_label.length > 0 else 15
     start_y = utils.grid(start_pos[1]) + 45 if self.x_axis_label.length > 0 else 15
-    labels_length = labels.map(x => $.ceil(x.length * 0.6 + 3))
     v_range_end = $.ceil(values.max() / y_step) + 1
     middle = start_x + utils.grid(labels_length.sum() / 2 + 1.5)
 

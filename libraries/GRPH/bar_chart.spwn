@@ -69,12 +69,27 @@ impl @bar_chart {
     labels = sorting_array if sorting_array.length > 0 else self.values.keys()
     if labels.length == 0 { throw "Nothing has been added to the graph yet." }
 
-    val_dict = labels.map(label => self.values[label])
-    values = val_dict.map(x => x.value if x is @dictionary else x)
+    let labels_length =[]
+    let val_dict = []
+    let values = []
+    let v_max = 0
+
+    for label in labels {
+      val_dict.push(self.values[label])
+
+      val = self.values[label].value
+      values.push(val.value if val is @dictionary else val)
+
+      labels_length.push($.ceil(label.length * 0.6 + 1))
+
+      if values.length > 0  && values[values.length - 1] > v_max {
+        v_max = values[values.length - 1]
+      }
+    }
+
     start_x = utils.grid(start_pos[0]) + 45 if self.y_axis_label.length > 0 else 15
     start_y = utils.grid(start_pos[1]) + 15
-    labels_length = labels.map(x => $.ceil(x.length * 0.6 + 1))
-    v_range_end = $.ceil(values.max() / y_step) + 1
+    v_range_end = $.ceil(v_max / y_step) + 1
 
     // add title text
     utils.create_title_text(
