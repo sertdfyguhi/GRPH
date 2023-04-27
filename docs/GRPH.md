@@ -4,36 +4,36 @@ A SPWN graphing library.
 
 - **Exports**
   - Macros
-    - [calc_y_step](docs/GRPH#calc_y_step)
+    - [calc_y_step](GRPH.md#calc_y_step)
 - **@line_graph**
   - Constructors
-    - [`@line_graph::`new](docs/line_graph.md#new)
+    - [`@line_graph::`new](line_graph.md#new)
   - Macros
-    - [`@line_graph::`add](docs/line_graph.md#add)
-    - [`@line_graph::`add_dict](docs/line_graph.md#add_dict)
-    - [`@line_graph::`set_line_color](docs/line_graph.md#set_line_color)
-    - [`@line_graph::`set_title](docs/line_graph.md#set_title)
-    - [`@line_graph::`set_x_axis_label](docs/line_graph.md#set_x_axis_label)
-    - [`@line_graph::`set_y_axis_label](docs/line_graph.md#set_y_axis_label)
-    - [`@line_graph::`show](docs/line_graph.md#show)
+    - [`@line_graph::`add](line_graph.md#add)
+    - [`@line_graph::`add_dict](line_graph.md#add_dict)
+    - [`@line_graph::`set_line_color](line_graph.md#set_line_color)
+    - [`@line_graph::`set_title](line_graph.md#set_title)
+    - [`@line_graph::`set_x_axis_label](line_graph.md#set_x_axis_label)
+    - [`@line_graph::`set_y_axis_label](line_graph.md#set_y_axis_label)
+    - [`@line_graph::`show](line_graph.md#show)
 - **@bar_chart**
   - Constructors
-    - [`@bar_chart::`new](docs/bar_chart.md#new)
+    - [`@bar_chart::`new](bar_chart.md#new)
   - Macros
-    - [`@bar_chart::`add](docs/bar_chart.md#add)
-    - [`@bar_chart::`add_dict](docs/bar_chart.md#add_dict)
-    - [`@bar_chart::`set_title](docs/bar_chart.md#set_title)
-    - [`@bar_chart::`set_y_axis_label](docs/bar_chart.md#set_y_axis_label)
-    - [`@bar_chart::`show](docs/bar_chart.md#show)
+    - [`@bar_chart::`add](bar_chart.md#add)
+    - [`@bar_chart::`add_dict](bar_chart.md#add_dict)
+    - [`@bar_chart::`set_title](bar_chart.md#set_title)
+    - [`@bar_chart::`set_y_axis_label](bar_chart.md#set_y_axis_label)
+    - [`@bar_chart::`show](bar_chart.md#show)
 - **@scatter_graph**
   - Macros
-    - [`@scatter_graph::`add](docs/scatter_graph.md#add)
-    - [`@scatter_graph::`add_array](docs/scatter_graph.md#add_array)
-    - [`@scatter_graph::`new](docs/scatter_graph.md#new)
-    - [`@scatter_graph::`set_title](docs/scatter_graph.md#set_title)
-    - [`@scatter_graph::`set_x_axis_label](docs/scatter_graph.md#set_x_axis_label)
-    - [`@scatter_graph::`set_y_axis_label](docs/scatter_graph.md#set_y_axis_label)
-    - [`@scatter_graph::`show](docs/scatter_graph.md#show)
+    - [`@scatter_graph::`add](scatter_graph.md#add)
+    - [`@scatter_graph::`add_array](scatter_graph.md#add_array)
+    - [`@scatter_graph::`new](scatter_graph.md#new)
+    - [`@scatter_graph::`set_title](scatter_graph.md#set_title)
+    - [`@scatter_graph::`set_x_axis_label](scatter_graph.md#set_x_axis_label)
+    - [`@scatter_graph::`set_y_axis_label](scatter_graph.md#set_y_axis_label)
+    - [`@scatter_graph::`show](scatter_graph.md#show)
 
 ## Exports
 
