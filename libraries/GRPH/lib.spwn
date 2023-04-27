@@ -3,7 +3,12 @@ import "bar_chart.spwn"
 import "scatter_graph.spwn"
 
 // utils
-calc_y_step = (values: @dictionary, max_height: @number = 100, between_y_step: @number = 1) {
+calc_y_step = #[
+  desc("Calculates the Y step of a graph based on the max height and the blocks between Y step.")
+] (
+  #[desc("Values of the graph as a dictionary.")] values: @dictionary,
+  #[desc("Max height of the graph in blocks.")] max_height: @number = 100,
+  #[desc("The amount of blocks between each step.")] between_y_step: @number = 1) {
   return $.ceil(values.values().max() / max_height * between_y_step)
 }
 

@@ -1,16 +1,20 @@
 import GRPH
 
-let d = {}
-
-for i in 0..20 {
-  d[@string(i)] = $.random() * 50
-}
-
 let chart = @line_graph::new(
-  d,
-  title="Title",
-  x_axis_label="X axis",
-  y_axis_label="Y axis",
-  line_color=hex("#FF99A5")
+  {
+    "monday": 5,
+    "tuesday": 7,
+    "wednesday": 3,
+    "thursday": 4,
+    "friday": 9,
+    "saturday": 8,
+    "sunday": 10
+  },
+  title="Books rented in a week",
+  x_axis_label="Days",
+  y_axis_label="Books rented",
+  line_color=hex("#FF99A5"),
+  sorting_array=["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
 )
-chart.show([5, 0], between_y_step=1)
+
+chart.show([5, 2])

@@ -14,14 +14,32 @@ calculate_line = (a: @array, b: @array, line_length: @number, distance: @number)
 
 type @line_graph
 impl @line_graph {
-  new: (
-    values: @dictionary = {},
-    title: @string = "",
-    x_axis_label: @string = "",
-    y_axis_label: @string = "",
-    line_color: @chroma = hex("#ffffff"),
-    axis_color_channel: @color = ?c,
-    text_color_channel: @color = ?c
+  new: #[
+    constructor,
+    desc("Creates a line graph.")
+    example('
+@line_graph::new(
+  {
+    "a": 5,
+    "b": 7,
+    "c": 3,
+  },
+  title="Title",
+  x_axis_label="X axis",
+  y_axis_label="Y axis",
+  line_color=hex("#FF99A5"),
+  sorting_array=["a", "b", "c"]
+)
+')
+  ] (
+    #[desc("Values as a dictionary.")] values: @dictionary = {},
+    #[desc("Title of the graph.")] title: @string = "",
+    #[desc("X axis label.")] x_axis_label: @string = "",
+    #[desc("Y axis label.")] y_axis_label: @string = "",
+    #[desc("Color of lines as a chroma.")] line_color: @chroma = null,
+    #[desc("Color channel of the axes.")] axis_color_channel: @color = ?c,
+    #[desc("Color channel of the text.")] text_color_channel: @color = ?c,
+    #[desc("Array of labels to sort the values from. Dictionaries in SPWN are not ordered.")] sorting_array: @array = []
   ) {
     let temp = @line_graph::{
       values: {},
@@ -30,7 +48,9 @@ impl @line_graph {
       y_axis_label,
       line_color,
       axis_color_channel,
-      text_color_channel
+      text_color_channel,
+      sorting_array,
+      sorting_array_def: sorting_array.length == 0
     }
 
     // check for type errors
@@ -38,42 +58,49 @@ impl @line_graph {
     return temp
   },
 
-  add: (self, label: @string, value: @number) {
-    self.values.set(label, value)
+  add: (
+    self,
+    #[desc("Label of the value.")] label: @string,
+    #[desc("Value.")] value: @number
+  ) {
+    self.add_dict({ label: value })
   },
 
-  add_dict: (self, values: @dictionary) {
+  add_dict: (self, #[desc("Values as a dictionary.")] values: @dictionary) {
     for [label, value] in values {
       if !(value is @number) { throw "Value of " + label + " should be of type @number." }
       self.values.set(label, value)
+      
+      if self.sorting_array_def {
+        self.sorting_array.push(label)
+      }
     }
   },
 
-  set_title: (self, label: @string) {
-    self.title = label
+  set_title: (self, title: @string) {
+    self.title = title
   },
 
-  set_x_axis_label: (self, label: @string) {
-    self.x_axis_label = label
+  set_x_axis_label: (self, x_axis_label: @string) {
+    self.x_axis_label = x_axis_label
   },
 
-  set_y_axis_label: (self, label: @string) {
-    self.y_axis_label = label
+  set_y_axis_label: (self, y_axis_label: @string) {
+    self.y_axis_label = y_axis_label
   },
 
-  set_line_color: (self, color: @string) {
+  set_line_color: (self, color: @chroma) {
     self.line_color = color
   },
 
   show: (
     self,
-    start_pos: @array = [0, 0],
-    y_step: @number = 1,
-    between_y_step: @number = 1,
-    groups: @array = [],
-    sorting_array: @array = []
+    #[desc("Start position of the graph measured from the bottom left corner.")] start_pos: @array = [0, 0],
+    #[desc("Amount to step on the Y axis.")] y_step: @number = 1,
+    #[desc("Amount of blocks between each step.")] between_y_step: @number = 1,
+    #[dedc("Groups to add to the graph objects.")] groups: @array = []
   ) {
-    labels = sorting_array if sorting_array.length > 0 else self.values.keys()
+    labels = self.sorting_array if self.sorting_array.length > 0 else self.values.keys()
     if labels.length == 0 { throw "Nothing has been added to the graph yet." }
 
     let values = []
@@ -87,7 +114,7 @@ impl @line_graph {
         values_max = self.values[label]
       }
 
-      len = $.ceil(label.length * 0.6 + 3)
+      len = $.ceil(label.length * 0.5 + 2)
       labels_length.push(len)
       labels_length_sum += len
     }

@@ -4,12 +4,12 @@ extract obj_props
 type @scatter_graph
 impl @scatter_graph {
   new: (
-    values: @array = [],
-    title: @string = "",
-    x_axis_label: @string = "",
-    y_axis_label: @string = "",
-    axis_color_channel: @color = ?c,
-    text_color_channel: @color = ?c
+    #[desc("Values as a array.")] values: @array = [],
+    #[desc("Title of the graph.")] title: @string = "",
+    #[desc("X axis label.")] x_axis_label: @string = "",
+    #[desc("Y axis label.")] y_axis_label: @string = "",
+    #[desc("Color channel of the axes.")] axis_color_channel: @color = ?c,
+    #[desc("Color channel of the text.")] text_color_channel: @color = ?c
   ) {
     let temp = @scatter_graph::{
       values: [],
@@ -17,7 +17,7 @@ impl @scatter_graph {
       x_axis_label,
       y_axis_label,
       axis_color_channel,
-      text_color_channel
+      text_color_channel,
     }
 
     // check for type errors
@@ -25,11 +25,15 @@ impl @scatter_graph {
     return temp
   },
 
-  add: (self, pos: @array, color: @chroma = null) {
-    self.add_array([{pos, color}])
+  add: (
+    self,
+    #[desc("Position (x, y) of the point.")] pos: @array,
+    #[desc("Color of the point.")] color: @chroma = null
+  ) {
+    self.add_array([{ pos, color }])
   },
 
-  add_array: (self, values: @array) {
+  add_array: (self, #[desc("Values as a array.")] values: @array) {
     for value in values {
       if !(value is @dictionary) { throw "Value is not of type @dictionary." }
       if !("pos" in value) { throw "Position not provided." }
@@ -64,12 +68,12 @@ impl @scatter_graph {
 
   show: (
     self,
-    start_pos: @array = [0, 0],
-    x_step: @number = 1,
-    y_step: @number = 1,
-    between_x_step: @number = 1,
-    between_y_step: @number = 1,
-    groups: @array = [],
+    #[desc("Start position of the graph measured from the bottom left corner.")] start_pos: @array = [0, 0],
+    #[desc("Amount to step on the X axis.")] x_step: @number = 1,
+    #[desc("Amount to step on the Y axis.")] y_step: @number = 1,
+    #[desc("Amount of blocks between each step on the X axis.")] between_x_step: @number = 1,
+    #[desc("Amount of blocks between each step on the Y axis.")] between_y_step: @number = 1,
+    #[dedc("Groups to add to the graph objects.")] groups: @array = []
   ) {
     if self.values.length == 0 { throw "Nothing has been added to the graph yet." }
 
@@ -175,7 +179,7 @@ impl @scatter_graph {
     }
 
     for point in self.values {
-      color = utils.create_color_channel(point.color) if point.color != null else ?c
+      color = utils.create_color_channel(point.color)
 
       $.add(obj {
         OBJ_ID: 725,

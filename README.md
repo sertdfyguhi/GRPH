@@ -1,7 +1,7 @@
-# GRPH: A compile-time graphing library in SPWN.
+# GRPH: A graphing library in SPWN.
 
-A compile-time graphing library in SPWN.  
-Currently only implements bar charts and line graphs.
+A graphing library in SPWN.  
+Documentation: [docs](docs/GRPH.md)
 
 ## Installation
 

@@ -12,8 +12,8 @@ floor = (n: @number, round_to: @number = 1) {
   return $.floor(n / round_to) * round_to
 }
 
-create_color_channel = (color: @chroma) {
-  if color == hex('#ffffff') { return ?c }
+create_color_channel = (color: @chroma|@NULL) {
+  if color == null || color == hex('#fff') { return ?c }
 
   cchannel = ?c
   c_rgb = color.rgb8()

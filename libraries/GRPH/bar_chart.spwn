@@ -3,19 +3,36 @@ extract obj_props
 
 type @bar_chart
 impl @bar_chart {
-  new: (
-    values: @dictionary = {},
-    title: @string = "",
-    y_axis_label: @string = "",
-    axis_color_channel: @color = ?c,
-    text_color_channel: @color = ?c
+  new: #[
+    constructor,
+    desc("Creates a bar chart.")
+    example('
+@bar_chart::new(
+  {
+    "a": 5,
+    "b": 7,
+    "c": 3,
+  },
+  title="Title",
+  y_axis_label="Y axis",
+  sorting_array=["a", "b", "c"]
+)
+') ] (
+    #[desc("Values as a dictionary.")] values: @dictionary = {},
+    #[desc("Title of the graph.")] title: @string = "",
+    #[desc("Y axis label.")] y_axis_label: @string = "",
+    #[desc("Color channel of the axes.")] axis_color_channel: @color = ?c,
+    #[desc("Color channel of the text.")] text_color_channel: @color = ?c,
+    #[desc("Array of labels to sort the values from. Dictionaries in SPWN are not ordered.")] sorting_array: @array = []
   ) {
     let temp = @bar_chart::{
       values: {},
       title,
       y_axis_label,
       axis_color_channel,
-      text_color_channel
+      text_color_channel,
+      sorting_array,
+      sorting_array_def: sorting_array.length == 0
     }
 
     // to be able to check for non number values
@@ -23,11 +40,20 @@ impl @bar_chart {
     return temp
   },
 
-  add: (self, label: @string, value: @number, color: @chroma = null) {
+  add: (
+    self,
+    #[desc("Label of the value.")] label: @string,
+    #[desc("Value.")] value: @number,
+    #[desc("Color of the bar for this value.")] color: @chroma = null
+  ) {
     self.values.set(label, { value, color })
+
+    if self.sorting_array_def {
+      self.sorting_array.push(label)
+    }
   },
 
-  add_dict: (self, values: @dictionary) {
+  add_dict: (self, #[desc("Values as a dictionary.")] values: @dictionary) {
     for [label, value] in values {
       match value {
         @number: self.values.set(label, { value, color: null }),
@@ -46,6 +72,10 @@ impl @bar_chart {
         } (),
         else: () { throw "Value should be of type @dictionary or @number." } ()
       }
+
+      if self.sorting_array_def {
+        self.sorting_array.push(label)
+      }
     }
   },
 
@@ -59,14 +89,13 @@ impl @bar_chart {
 
   show: (
     self,
-    start_pos: @array = [0, 0],
-    y_step: @number = 1,
-    between_y_step: @number = 1,
-    groups: @array = [],
-    sorting_array: @array = []
+    #[desc("Start position of the graph measured from the bottom left corner.")] start_pos: @array = [0, 0],
+    #[desc("Amount to step on the Y axis.")] y_step: @number = 1,
+    #[desc("Amount of blocks between each step.")] between_y_step: @number = 1,
+    #[dedc("Groups to add to the graph objects.")] groups: @array = []
   ) {
     // setup graph axis
-    labels = sorting_array if sorting_array.length > 0 else self.values.keys()
+    labels = self.sorting_array if self.sorting_array.length > 0 else self.values.keys()
     if labels.length == 0 { throw "Nothing has been added to the graph yet." }
 
     let labels_length = []
