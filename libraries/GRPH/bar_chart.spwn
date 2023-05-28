@@ -90,6 +90,7 @@ impl @bar_chart {
   show: (
     self,
     #[desc("Start position of the graph measured from the bottom left corner.")] start_pos: @array = [0, 0],
+    #[desc("Adds a text object showing the value of the bar.")] number_text: @bool = false,
     #[desc("Amount to step on the Y axis.")] y_step: @number = 1,
     #[desc("Amount of blocks between each step.")] between_y_step: @number = 1,
     #[dedc("Groups to add to the graph objects.")] groups: @array = []
@@ -213,11 +214,11 @@ impl @bar_chart {
 
       // bars
       range_end = $.ceil(values[j] / y_step * between_y_step)
-      for j in 1..range_end {
+      for k in 1..range_end {
         $.add(obj {
           OBJ_ID: 208,
           X: x,
-          Y: start_y + utils.grid(j + 1),
+          Y: start_y + utils.grid(k + 1),
           GROUPS: groups,
           COLOR: color,
           COLOR_2: color
@@ -226,14 +227,32 @@ impl @bar_chart {
 
       // add last object to be able to add values that is not a multiple of step
       amount_to_mv = 30 * (between_y_step / y_step) * (values[j] - utils.floor(values[j], y_step / between_y_step))
+      y = start_y + utils.grid(range_end + @number(amount_to_mv == 0)) + amount_to_mv
       $.add(obj {
         OBJ_ID: 208,
         X: x,
-        Y: start_y + utils.grid(range_end + (0 if amount_to_mv > 0 else 1)) + amount_to_mv,
+        Y: y,
+        Z_LAYER: 1,
         GROUPS: groups,
         COLOR: color,
         COLOR_2: color
       })
+
+      if number_text {
+        @string(values[j]).to_obj().with(
+          Y, y + 5
+        ).with(
+          X, x
+        ).with(
+          COLOR, self.text_color_channel
+        ).with(
+          SCALING, 0.5
+        ).with(
+          Z_LAYER, 2
+        ).with(
+          GROUPS, groups
+        ).add()
+      }
 
       accum += utils.grid(len) + 15
     }

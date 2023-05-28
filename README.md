@@ -47,4 +47,4 @@ chart.show(start_pos=[10, 1])
 - [x] Add scatter graph
 - [ ] Add pie chart
 - [ ] Fix bug where block is out of graph when value is lower than 1
-- [ ] Add functionality to have the value shown on graph
+- [x] Add functionality to have the value shown on graph

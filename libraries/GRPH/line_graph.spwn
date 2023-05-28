@@ -96,6 +96,7 @@ impl @line_graph {
   show: (
     self,
     #[desc("Start position of the graph measured from the bottom left corner.")] start_pos: @array = [0, 0],
+    #[desc("Adds a text object showing the value of the point.")] number_text: @bool = false,
     #[desc("Amount to step on the Y axis.")] y_step: @number = 1,
     #[desc("Amount of blocks between each step.")] between_y_step: @number = 1,
     #[dedc("Groups to add to the graph objects.")] groups: @array = []
@@ -114,7 +115,7 @@ impl @line_graph {
         values_max = self.values[label]
       }
 
-      len = $.ceil(label.length * 0.5 + 2)
+      len = $.ceil(label.length / 2 + 2)
       labels_length.push(len)
       labels_length_sum += len
     }
@@ -218,10 +219,27 @@ impl @line_graph {
         OBJ_ID: 725,
         X: x,
         Y: y,
+        Z_LAYER: 1,
         GROUPS: groups,
         COLOR: line_color_channel,
-        SCALING: 1.8
+        SCALING: 2
       })
+
+      if number_text {
+        @string(values[j]).to_obj().with(
+          Y, y
+        ).with(
+          X, x
+        ).with(
+          COLOR, self.text_color_channel
+        ).with(
+          SCALING, 0.4
+        ).with(
+          Z_LAYER, 2
+        ).with(
+          GROUPS, groups
+        ).add()
+      }
 
       // connecting points with line to become a line graph
       if j > 0 {
@@ -236,6 +254,7 @@ impl @line_graph {
             OBJ_ID: 1756,
             X: line_end[0],
             Y: line_end[1],
+            Z_LAYER: 1,
             ROTATION: line_angle,
             GROUPS: groups,
             COLOR: line_color_channel
@@ -247,6 +266,7 @@ impl @line_graph {
           OBJ_ID: 1756,
           X: lln_end[0],
           Y: lln_end[1],
+          Z_LAYER: 1,
           ROTATION: line_angle,
           GROUPS: groups,
           COLOR: line_color_channel

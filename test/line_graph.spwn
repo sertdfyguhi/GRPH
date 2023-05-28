@@ -17,4 +17,4 @@ let chart = @line_graph::new(
   sorting_array=["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
 )
 
-chart.show([5, 2])
+chart.show([5, 2], number_text=true)

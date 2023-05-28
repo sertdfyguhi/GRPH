@@ -14,5 +14,6 @@ let chart = @bar_chart::new(
   title="The Difficulty of\nDifferent Geometry Dash Levels",
   y_axis_label="Difficulty"
 )
+
 chart.add("Back on Track", 2, color=hex("#FF8329"))
-chart.show(start_pos=[10, 1])
+chart.show(start_pos=[10, 1], number_text=true)
