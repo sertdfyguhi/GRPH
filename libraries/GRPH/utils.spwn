@@ -1,7 +1,10 @@
 extract obj_props
 
+ONE_BLOCK = 30
+HALF_BLOCK = ONE_BLOCK / 2
+
 grid = (n: @number) {
-  return 15 + (n - 1) * 30
+  return HALF_BLOCK + (n - 1) * ONE_BLOCK
 }
 
 ceil = (n: @number, round_to: @number = 1) {
@@ -106,12 +109,89 @@ create_title_text = (
   }
 }
 
+create_step_y = (
+  i: @number,
+  start_x: @number,
+  start_y: @number,
+  y_step: @number,
+  between_y_step: @number,
+  groups: @array,
+  axis_color_channel: @color,
+  text_color_channel: @color
+) {
+  step_y = start_y + grid(between_y_step * i + 1.5)
+
+  // step lines
+  $.add(obj {
+    OBJ_ID: 1756,
+    X: start_x + ONE_BLOCK,
+    Y: step_y,
+    ROTATION: 90,
+    SCALING: 0.5,
+    GROUPS: groups,
+    COLOR: axis_color_channel
+  })
+
+  // step text
+  @string(y_step * i).to_obj().with(
+    X, start_x + HALF_BLOCK
+  ).with(
+    Y, step_y
+  ).with(
+    SCALING, 0.5
+  ).with(
+    COLOR, text_color_channel
+  ).with(
+    GROUPS, groups
+  ).add()
+}
+
+create_step_x = (
+  i: @number,
+  start_x: @number,
+  start_y: @number,
+  x_step: @number,
+  between_x_step: @number,
+  groups: @array,
+  axis_color_channel: @color,
+  text_color_channel: @color
+) {
+  step_x = start_x + grid(between_x_step * i + 1.5)
+
+  // step lines
+  $.add(obj {
+    OBJ_ID: 1756,
+    X: step_x,
+    Y: start_y + ONE_BLOCK,
+    SCALING: 0.5,
+    GROUPS: groups,
+    COLOR: axis_color_channel
+  })
+
+  // step text
+  @string(x_step * i).to_obj().with(
+    X, step_x
+  ).with(
+    Y, start_y + HALF_BLOCK
+  ).with(
+    SCALING, 0.5
+  ).with(
+    COLOR, text_color_channel
+  ).with(
+    GROUPS, groups
+  ).add()
+}
+
 return {
+  ONE_BLOCK,
+  HALF_BLOCK,
   grid,
   floor,
   ceil,
   create_color_channel,
   create_y_axis_label,
   create_x_axis_label,
-  create_title_text
+  create_title_text,
+  create_step_x,
+  create_step_y,
 }

@@ -90,6 +90,7 @@ impl @bar_chart {
   show: (
     self,
     #[desc("Start position of the graph measured from the bottom left corner.")] start_pos: @array = [0, 0],
+    // #[desc("Shows a horizontal bar chart instead.")] horizontal: @bool = false
     #[desc("Adds a text object showing the value of the bar.")] number_text: @bool = false,
     #[desc("Amount to step on the Y axis.")] y_step: @number = 1,
     #[desc("Amount of blocks between each step.")] between_y_step: @number = 1,
@@ -103,26 +104,20 @@ impl @bar_chart {
     let labels_length_sum = 0
     let val_dict = []
     let values = []
-    let v_max = 0
 
     for label in labels {
-      x = self.values[label]
-      val_dict.push(x)
-      val = x.value if x is @dictionary else x
-      values.push(val)
-
-      if val > v_max {
-        v_max = val
-      }
+      value = self.values[label]
+      val_dict.push(value)
+      values.push(value.value if value is @dictionary else value)
 
       len = $.ceil(label.length * 0.6 + 3)
       labels_length.push(len)
-      labels_length_sum += len
     }
 
-    start_x = utils.grid(start_pos[0]) + 45 if self.y_axis_label.length > 0 else 15
-    start_y = utils.grid(start_pos[1]) + 15
-    v_range_end = $.ceil(v_max / y_step) + 1
+    x_margin = utils.grid(2) if self.y_axis_label.length > 0 else utils.HALF_BLOCK
+    start_x = utils.grid(start_pos[0]) + x_margin
+    start_y = utils.grid(start_pos[1]) + utils.HALF_BLOCK
+    v_range_end = $.ceil(values.max() / y_step) + 1
 
     // add title text
     utils.create_title_text(
@@ -131,51 +126,46 @@ impl @bar_chart {
       between_y_step,
       self.text_color_channel,
       groups,
-      start_x + utils.grid(labels_length_sum / 2 + 1.5),
+      start_x + utils.grid(labels_length.sum() / 2 + 1.5),
       start_y
     )
 
     // add y axis label
-    utils.create_y_axis_label(self.y_axis_label, v_range_end, between_y_step, self.text_color_channel, groups, start_y, start_x)
+    utils.create_y_axis_label(
+      self.y_axis_label,
+      v_range_end,
+      between_y_step,
+      self.text_color_channel,
+      groups,
+      start_y,
+      start_x
+    )
 
     // vertical axis
     for i in 0..v_range_end {
       if i > 0 {
         // vertical lines
-        for j in 1..(between_y_step + 1) {
+        for j in 2..(between_y_step + 2) {
           $.add(obj {
             OBJ_ID: 1756,
             X: start_x + 30,
-            Y: start_y + utils.grid(between_y_step * (i - 1) + j + 1),
+            Y: start_y + utils.grid(between_y_step * (i - 1) + j),
             GROUPS: groups,
             COLOR: self.axis_color_channel
           })
         }
       }
 
-      // step lines
-      $.add(obj {
-        OBJ_ID: 1756,
-        X: start_x + 30,
-        Y: start_y + utils.grid(between_y_step * i + 1.5),
-        ROTATION: 90,
-        SCALING: 0.5,
-        GROUPS: groups,
-        COLOR: self.axis_color_channel
-      })
-
-      // step text
-      @string(y_step * i).to_obj().with(
-        X, start_x + 15
-      ).with(
-        Y, start_y + utils.grid(between_y_step * i + 1.5)
-      ).with(
-        SCALING, 0.5
-      ).with(
-        COLOR, self.text_color_channel
-      ).with(
-        GROUPS, groups
-      ).add()
+      utils.create_step_y(
+        i,
+        start_x,
+        start_y,
+        y_step,
+        between_y_step,
+        groups,
+        self.axis_color_channel,
+        self.text_color_channel
+      )
     }
 
     // horizontal axis
@@ -189,7 +179,7 @@ impl @bar_chart {
         $.add(obj {
           OBJ_ID: 1756,
           X: start_x + accum + utils.grid(i + 1),
-          Y: start_y + 30,
+          Y: start_y + utils.ONE_BLOCK,
           ROTATION: 90,
           GROUPS: groups,
           COLOR: self.axis_color_channel
@@ -200,7 +190,7 @@ impl @bar_chart {
 
       // label
       labels[j].to_obj().with(
-        Y, start_y + 15
+        Y, start_y + utils.HALF_BLOCK
       ).with(
         X, x
       ).with(
@@ -214,6 +204,7 @@ impl @bar_chart {
 
       // bars
       range_end = $.ceil(values[j] / y_step * between_y_step)
+
       for k in 1..range_end {
         $.add(obj {
           OBJ_ID: 208,
@@ -226,8 +217,10 @@ impl @bar_chart {
       }
 
       // add last object to be able to add values that is not a multiple of step
-      amount_to_mv = 30 * (between_y_step / y_step) * (values[j] - utils.floor(values[j], y_step / between_y_step))
+      decimal = values[j] - utils.floor(values[j], y_step / between_y_step)
+      amount_to_mv = 30 * (between_y_step / y_step) * decimal
       y = start_y + utils.grid(range_end + @number(amount_to_mv == 0)) + amount_to_mv
+
       $.add(obj {
         OBJ_ID: 208,
         X: x,
@@ -254,7 +247,7 @@ impl @bar_chart {
         ).add()
       }
 
-      accum += utils.grid(len) + 15
+      accum += utils.grid(len) + utils.HALF_BLOCK
     }
   }
 }

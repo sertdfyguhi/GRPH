@@ -39,7 +39,7 @@ impl @scatter_graph {
       if !("pos" in value) { throw "Position not provided." }
 
       color = value.color if "color" in value else null
-      
+
       if !(value.pos is @array) { throw "Position provided is not of type @array." }
       if !(color is @chroma|@NULL) { throw "Color provided is not of type @chroma." }
       if value.pos.length < 2 { throw "Position provided is not of length 2." }
@@ -77,6 +77,7 @@ impl @scatter_graph {
   ) {
     if self.values.length == 0 { throw "Nothing has been added to the graph yet." }
 
+    // find maximum x and y position
     let [x_max, y_max] = [0, 0]
     for v in self.values {
       [x, y] = v.pos
@@ -84,8 +85,9 @@ impl @scatter_graph {
       if y > y_max { y_max = y }
     }
 
-    start_x = utils.grid(start_pos[0]) + 45 if self.y_axis_label.length > 0 else 15
-    start_y = utils.grid(start_pos[1]) + 45 if self.x_axis_label.length > 0 else 15
+    margin = 45 if self.y_axis_label.length > 0 else 15
+    start_x = utils.grid(start_pos[0]) + margin
+    start_y = utils.grid(start_pos[1]) + margin
     v_range_end = $.ceil(y_max / y_step) + 1
     middle = start_x + utils.grid(x_max / x_step * between_x_step / 2 + 1.5)
 
@@ -102,50 +104,37 @@ impl @scatter_graph {
     for i in 0..v_range_end {
       if i > 0 {
         // vertical lines
-        for j in 1..(between_y_step + 1) {
+        for j in 2..(between_y_step + 2) {
           $.add(obj {
             OBJ_ID: 1756,
-            X: start_x + 30,
-            Y: start_y + utils.grid(between_y_step * (i - 1) + j + 1),
+            X: start_x + utils.ONE_BLOCK,
+            Y: start_y + utils.grid(between_y_step * (i - 1) + j),
             GROUPS: groups,
             COLOR: self.axis_color_channel
           })
         }
       }
 
-      // step lines
-      $.add(obj {
-        OBJ_ID: 1756,
-        X: start_x + 30,
-        Y: start_y + utils.grid(between_y_step * i + 1.5),
-        ROTATION: 90,
-        SCALING: 0.5,
-        GROUPS: groups,
-        COLOR: self.axis_color_channel
-      })
-
-      // step text
-      @string(y_step * i).to_obj().with(
-        X, start_x + 15
-      ).with(
-        Y, start_y + utils.grid(between_y_step * i + 1.5)
-      ).with(
-        SCALING, 0.5
-      ).with(
-        COLOR, self.text_color_channel
-      ).with(
-        GROUPS, groups
-      ).add()
+      utils.create_step_y(
+        i,
+        start_x,
+        start_y,
+        y_step,
+        between_y_step,
+        groups,
+        self.axis_color_channel,
+        self.text_color_channel
+      )
     }
 
     // horizontal axis
     for i in 0..$.ceil(x_max / x_step) + 1 {
       if i > 0 {
         // horizontal lines
-        for j in 1..(between_x_step + 1) {
+        for j in 2..(between_x_step + 2) {
           $.add(obj {
             OBJ_ID: 1756,
-            X: start_x + utils.grid(between_x_step * (i - 1) + j + 1),
+            X: start_x + utils.grid(between_x_step * (i - 1) + j),
             Y: start_y + 30,
             ROTATION: 90,
             GROUPS: groups,
@@ -154,28 +143,16 @@ impl @scatter_graph {
         }
       }
 
-      // step lines
-      $.add(obj {
-        OBJ_ID: 1756,
-        X: start_x + utils.grid(between_x_step * i + 1.5),
-        Y: start_y + 30,
-        SCALING: 0.5,
-        GROUPS: groups,
-        COLOR: self.axis_color_channel
-      })
-
-      // step text
-      @string(x_step * i).to_obj().with(
-        X, start_x + utils.grid(between_x_step * i + 1.5)
-      ).with(
-        Y, start_y + 15
-      ).with(
-        SCALING, 0.5
-      ).with(
-        COLOR, self.text_color_channel
-      ).with(
-        GROUPS, groups
-      ).add()
+      utils.create_step_x(
+        i,
+        start_x,
+        start_y,
+        x_step,
+        between_x_step,
+        groups,
+        self.axis_color_channel,
+        self.text_color_channel
+      )
     }
 
     for point in self.values {
@@ -183,8 +160,8 @@ impl @scatter_graph {
 
       $.add(obj {
         OBJ_ID: 725,
-        X: start_x + utils.grid(point.pos[0] / x_step * between_x_step) + 45,
-        Y: start_y + utils.grid(point.pos[1] / y_step * between_y_step) + 45,
+        X: start_x + utils.grid(point.pos[0] / x_step * between_x_step + 1.5),
+        Y: start_y + utils.grid(point.pos[1] / y_step * between_y_step + 1.5),
         GROUPS: groups,
         COLOR: color,
         SCALING: 1.8

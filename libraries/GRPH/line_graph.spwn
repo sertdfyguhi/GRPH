@@ -107,23 +107,24 @@ impl @line_graph {
     let values = []
     let values_max = 0
     let labels_length = []
-    let labels_length_sum = 0
 
     for label in labels {
       values.push(self.values[label])
+
       if self.values[label] > values_max {
         values_max = self.values[label]
       }
 
       len = $.ceil(label.length / 2 + 2)
       labels_length.push(len)
-      labels_length_sum += len
     }
-    
-    start_x = utils.grid(start_pos[0]) + 45 if self.y_axis_label.length > 0 else 15
-    start_y = utils.grid(start_pos[1]) + 45 if self.x_axis_label.length > 0 else 15
+
+    // calculate starting position for graph
+    margin = 1.5 if self.y_axis_label.length > 0 else 0.5
+    start_x = utils.grid(start_pos[0] + margin)
+    start_y = utils.grid(start_pos[1] + margin)
     v_range_end = $.ceil(values_max / y_step) + 1
-    middle = start_x + utils.grid(labels_length_sum / 2 + 1.5)
+    middle = start_x + utils.grid(labels_length.sum() / 2 + 1.5)
 
     // create line color channel
     line_color_channel = utils.create_color_channel(self.line_color)
@@ -141,40 +142,27 @@ impl @line_graph {
     for i in 0..v_range_end {
       if i > 0 {
         // vertical lines
-        for j in 1..(between_y_step + 1) {
+        for j in 2..(between_y_step + 2) {
           $.add(obj {
             OBJ_ID: 1756,
-            X: start_x + 30,
-            Y: start_y + utils.grid(between_y_step * (i - 1) + j + 1),
+            X: start_x + utils.ONE_BLOCK,
+            Y: start_y + utils.grid(between_y_step * (i - 1) + j),
             GROUPS: groups,
             COLOR: self.axis_color_channel
           })
         }
       }
 
-      // step lines
-      $.add(obj {
-        OBJ_ID: 1756,
-        X: start_x + 30,
-        Y: start_y + utils.grid(between_y_step * i + 1.5),
-        ROTATION: 90,
-        SCALING: 0.5,
-        GROUPS: groups,
-        COLOR: self.axis_color_channel
-      })
-
-      // step text
-      @string(y_step * i).to_obj().with(
-        X, start_x + 15
-      ).with(
-        Y, start_y + utils.grid(between_y_step * i + 1.5)
-      ).with(
-        SCALING, 0.5
-      ).with(
-        COLOR, self.text_color_channel
-      ).with(
-        GROUPS, groups
-      ).add()
+      utils.create_step_y(
+        i,
+        start_x,
+        start_y,
+        y_step,
+        between_y_step,
+        groups,
+        self.axis_color_channel,
+        self.text_color_channel
+      )
     }
 
     // horizontal axis
@@ -185,11 +173,11 @@ impl @line_graph {
       // horizontal lines
       len = labels_length[j]
 
-      for i in 1..(len + 1) {
+      for i in 2..(len + 2) {
         $.add(obj {
           OBJ_ID: 1756,
-          X: start_x + accum + utils.grid(i + 1),
-          Y: start_y + 30,
+          X: start_x + accum + utils.grid(i),
+          Y: start_y + utils.ONE_BLOCK,
           ROTATION: 90,
           GROUPS: groups,
           COLOR: self.axis_color_channel
@@ -200,7 +188,7 @@ impl @line_graph {
 
       // label
       labels[j].to_obj().with(
-        Y, start_y + 15
+        Y, start_y + utils.HALF_BLOCK
       ).with(
         X, x
       ).with(
@@ -210,10 +198,10 @@ impl @line_graph {
       ).add()
 
       // value dot
-      amount_to_mv = 30 * (between_y_step / y_step) * (values[j] - utils.floor(values[j], y_step / between_y_step))
-      y = start_y + utils.grid(
-        $.ceil(values[j] / y_step * between_y_step) + (0.5 if amount_to_mv > 0 else 1.5)
-      ) + amount_to_mv
+      decimal = values[j] - utils.floor(values[j], y_step / between_y_step) // idk what to name it idk what this does
+      amount_to_mv = utils.ONE_BLOCK * (between_y_step / y_step) * decimal
+      dot_margin = 0.5 if amount_to_mv > 0 else 1.5
+      y = start_y + utils.grid($.ceil(values[j] / y_step * between_y_step) + dot_margin) + amount_to_mv
 
       $.add(obj {
         OBJ_ID: 725,
@@ -248,7 +236,7 @@ impl @line_graph {
         line_angle = $.atan2(x - last_pos[0], y - last_pos[1]) * 180 / PI
 
         for k in 0..$.ceil(line_length / 30 - 1) {
-          line_end = calculate_line(last_pos, [x, y], line_length, k * 30 + 15)
+          line_end = calculate_line(last_pos, [x, y], line_length, utils.grid(k + 1))
 
           $.add(obj {
             OBJ_ID: 1756,
@@ -261,7 +249,8 @@ impl @line_graph {
           })
         }
 
-        lln_end = calculate_line([x, y], last_pos, line_length, 15)
+        lln_end = calculate_line([x, y], last_pos, line_length, utils.HALF_BLOCK)
+
         $.add(obj {
           OBJ_ID: 1756,
           X: lln_end[0],
@@ -273,7 +262,7 @@ impl @line_graph {
         })
       }
 
-      accum += utils.grid(len) + 15
+      accum += utils.grid(len + 0.5)
       positions.push([x, y])
     }
   }
